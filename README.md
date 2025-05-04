@@ -3,8 +3,8 @@
 
 A content-based movie recommendation system that suggests similar movies based on your selection. The system analyzes movie features like genres, keywords, cast, and crew to find the most similar movies.
 
-![Movie Recommender Screenshot](![image](https://github.com/user-attachments/assets/e656fdd3-1738-41bf-9e64-4e76007f725a)
-)
+![image](https://github.com/user-attachments/assets/e818e18d-6fe2-47d7-85ea-7bcfa8f23163)
+
 
 ## Features
 
