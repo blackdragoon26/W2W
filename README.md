@@ -1,8 +1,10 @@
+# Project W2W - What 2 Watch
 # Movie Recommender System
 
 A content-based movie recommendation system that suggests similar movies based on your selection. The system analyzes movie features like genres, keywords, cast, and crew to find the most similar movies.
 
-![Movie Recommender Screenshot](screenshots/app_screenshot.png)
+![Movie Recommender Screenshot](![image](https://github.com/user-attachments/assets/e656fdd3-1738-41bf-9e64-4e76007f725a)
+)
 
 ## Features
 
