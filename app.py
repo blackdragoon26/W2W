@@ -2,14 +2,14 @@ import pickle
 import streamlit as st
 import requests
 
-# Set page configuration
+# ---------------- Page Config ----------------
 st.set_page_config(
     page_title="Movie Recommender System",
     page_icon="🎬",
     layout="wide"
 )
 
-# Add custom CSS
+# ---------------- Custom CSS ----------------
 st.markdown("""
 <style>
     .main-header {
@@ -24,39 +24,57 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Functions
+# ---------------- Functions ----------------
 def fetch_poster(movie_id):
-    url = "https://api.themoviedb.org/3/movie/{}?api_key=8265bd1679663a7ea12ac168da84d2e8&language=en-US".format(movie_id)
-    data = requests.get(url)
-    data = data.json()
-    poster_path = data['poster_path']
-    full_path = "https://image.tmdb.org/t/p/w500/" + poster_path
-    return full_path
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=8265bd1679663a7ea12ac168da84d2e8&language=en-US"
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    try:
+        r = requests.get(url, headers=headers, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+
+        poster_path = data.get("poster_path")
+        if poster_path:
+            return "https://image.tmdb.org/t/p/w500/" + poster_path
+        else:
+            return "https://via.placeholder.com/300x450?text=No+Poster"
+
+    except Exception as e:
+        print("Poster error:", e)
+        return "https://via.placeholder.com/300x450?text=Error"
 
 def recommend(movie):
     index = movies[movies['title'] == movie].index[0]
     distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
-    recommended_movie_names = []
-    recommended_movie_posters = []
+
+    names = []
+    posters = []
+
     for i in distances[1:6]:
         movie_id = movies.iloc[i[0]].movie_id
-        recommended_movie_posters.append(fetch_poster(movie_id))
-        recommended_movie_names.append(movies.iloc[i[0]].title)
-    return recommended_movie_names, recommended_movie_posters
+        posters.append(fetch_poster(movie_id))
+        names.append(movies.iloc[i[0]].title)
 
-# Main app
+    return names, posters
+
+# ---------------- Cache Data ----------------
+@st.cache_data
+def load_data():
+    movies = pickle.load(open('movie_list.pkl', 'rb'))
+    similarity = pickle.load(open('similarity.pkl', 'rb'))
+    return movies, similarity
+
+movies, similarity = load_data()
+
+# ---------------- Main UI ----------------
 st.markdown("<h1 class='main-header'>🎬 Movie Recommender System</h1>", unsafe_allow_html=True)
 
-# Load data
-movies = pickle.load(open('movie_list.pkl','rb'))
-similarity = pickle.load(open('similarity.pkl','rb'))
-
-# Add description
 st.markdown("""
 This app recommends movies similar to your selection based on content features like genre, keywords, cast, and crew.
 """)
 
-# Create sidebar for additional info
+# Sidebar
 with st.sidebar:
     st.header("About")
     st.info("This movie recommender uses content-based filtering to suggest similar movies.")
@@ -64,42 +82,27 @@ with st.sidebar:
     st.write("1. Select a movie you like")
     st.write("2. Click 'Show Recommendations'")
     st.write("3. Discover 5 similar movies")
-    
-    # Add creator information
-    st.markdown("---")
-    st.header("Creator")
-    st.markdown("<div style='text-align: center;'><h3>Made by Sankalp Jha</h3></div>", unsafe_allow_html=True)
-    
-    # Social links
-    st.subheader("Connect with me")
-    cols = st.columns(3)
-    with cols[0]:
-        st.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/sankalp-jha-18a95a244/)")
-    with cols[1]:
-        st.markdown("[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/blackdragoon26)")
-    with cols[2]:
-        st.markdown("[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/Sankalpjha26)")
-    
-    # Add a footer
-    st.markdown("---")
-    st.caption("© 2025 Sankalp Jha. All rights reserved.")
 
-# Movie selection
+    st.markdown("---")
+    st.markdown("<div style='text-align:center'><h3>Made by Sankalp Jha</h3></div>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.caption("© 2025 Sankalp Jha")
+
+# Movie selector
 movie_list = movies['title'].values
-selected_movie = st.selectbox(
-    "Type or select a movie from the dropdown",
-    movie_list
-)
+selected_movie = st.selectbox("Type or select a movie from the dropdown", movie_list)
 
-# Recommendation button
-if st.button('Show Recommendations', key='recommend_button'):
-    with st.spinner('Finding movies for you...'):
-        recommended_movie_names, recommended_movie_posters = recommend(selected_movie)
-        
-        # Display recommendations in columns
+placeholder = st.empty()
+
+# Button
+if st.button("Show Recommendations"):
+    with st.spinner("Finding movies for you..."):
+        names, posters = recommend(selected_movie)
+
+    with placeholder.container():
         cols = st.columns(5)
         for i in range(5):
             with cols[i]:
-                st.image(recommended_movie_posters[i], use_container_width=True)
-                st.markdown(f"<p class='movie-title'>{recommended_movie_names[i]}</p>", unsafe_allow_html=True)
+                st.image(posters[i], width=250)
+                st.markdown(f"<p class='movie-title'>{names[i]}</p>", unsafe_allow_html=True)
 

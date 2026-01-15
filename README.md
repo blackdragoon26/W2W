@@ -31,8 +31,8 @@ The recommendation engine uses:
 
 1. Clone this repository:
    ```
-   git clone https://github.com/sankalp-jha/movie-recommender.git
-   cd movie-recommender
+   git clone https://github.com/blackdragoon26/W2W.git
+   cd W2W
    ```
 
 2. Create and activate a virtual environment (as used in development):
@@ -50,8 +50,8 @@ The recommendation engine uses:
 
 1. Clone this repository:
    ```
-   git clone https://github.com/sankalp-jha/movie-recommender.git
-   cd movie-recommender
+   git clone https://github.com/blackdragoon26/W2W.git
+   cd W2W
    ```
 
 2. Create and activate a virtual environment:
